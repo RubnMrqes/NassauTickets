@@ -1,0 +1,44 @@
+name: Verificação nassauTickets
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_ci_temporario
+          MYSQL_DATABASE: nassau_tickets_test
+          MYSQL_USER: nassau_app
+          MYSQL_PASSWORD: senha_ci_temporaria
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -proot_ci_temporario"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: nassau_tickets_test
+      DB_USER: nassau_app
+      DB_PASSWORD: senha_ci_temporaria
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+      - run: npm run db:init
+        working-directory: backend
+      - run: npm run test:integration
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
