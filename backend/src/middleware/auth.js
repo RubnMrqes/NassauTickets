@@ -2,15 +2,13 @@ import { pool } from '../db.js';
 import { assert } from '../domain/errors.js';
 import { tokenHash } from '../services/password.js';
 
-export async function authenticated(req, res, next) {
+export async function authenticated(req, _res, next) {
   const authorization = req.headers.authorization || '';
-
   const match = /^Bearer ([a-f0-9]{64})$/.exec(authorization);
 
   assert(match, 401, 'Faça login para continuar.');
 
-  const token = match[1];
-  const hash = tokenHash(token);
+  const hash = tokenHash(match[1]);
 
   const [rows] = await pool.execute(
     `SELECT
@@ -34,12 +32,8 @@ export async function authenticated(req, res, next) {
   next();
 }
 
-export function manager(req, res, next) {
-  assert(
-    req.user.gestor === 1,
-    403,
-    'Acesso exclusivo do gestor.'
-  );
+export function manager(req, _res, next) {
+  assert(req.user.gestor === 1, 403, 'Acesso exclusivo do gestor.');
 
   next();
 }
