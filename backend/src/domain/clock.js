@@ -8,6 +8,9 @@ const formatter = new Intl.DateTimeFormat('pt-BR', {
   hourCycle: 'h23'
 });
 
+const OPENING_TIME = 7 * 60;
+const CLOSING_TIME = 17 * 60;
+
 export function businessClock(now = new Date()) {
   const parts = Object.fromEntries(
     formatter
@@ -16,17 +19,20 @@ export function businessClock(now = new Date()) {
       .map((part) => [part.type, part.value])
   );
 
-  const minutes = Number(parts.hour) * 60 + Number(parts.minute);
+  const hour = Number(parts.hour);
+  const minute = Number(parts.minute);
+  const totalMinutes = hour * 60 + minute;
 
   return {
     date: `${parts.year}-${parts.month}-${parts.day}`,
-    open: minutes >= 7 * 60 && minutes < 17 * 60,
-    closed: minutes >= 17 * 60
+    open: totalMinutes >= OPENING_TIME && totalMinutes < CLOSING_TIME,
+    closed: totalMinutes >= CLOSING_TIME
   };
 }
 
 export function ticketNumber(date, type, sequence) {
-  const formattedDate = date.replaceAll('-', '').slice(2);
+  const dateWithoutSeparators = date.replaceAll('-', '').slice(2);
+  const paddedSequence = String(sequence).padStart(3, '0');
 
-  return `${formattedDate}-${type}${String(sequence).padStart(3, '0')}`;
+  return `${dateWithoutSeparators}-${type}${paddedSequence}`;
 }
