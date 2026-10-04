@@ -49,3 +49,9 @@ test('scrypt aceita senha correta, rejeita incorreta e utiliza salt diferente', 
   assert.equal(await verifyPassword('outra-senha-qualquer', hash), false);
   assert.notEqual(hash, await hashPassword('uma-senha-de-estudo'));
 });
+test('número da senha mantém três dígitos com zeros à esquerda', () => {
+  assert.equal(ticketNumber('2026-10-04', 'SP', 1), '261004-SP001');
+  assert.equal(ticketNumber('2026-10-04', 'SE', 9), '261004-SE009');
+  assert.equal(ticketNumber('2026-10-04', 'SG', 10), '261004-SG010');
+  assert.equal(ticketNumber('2026-10-04', 'SP', 100), '261004-SP100');
+});
