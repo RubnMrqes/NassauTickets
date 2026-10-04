@@ -1,5 +1,48 @@
 import { useState } from 'react';
 import { api } from '../services/api.js';
+import { formatDuration } from '../utils/report.js';
+
+const typeLabels = { SP: 'Prioritária', SE: 'Retirada de exames', SG: 'Geral' };
+
+function ReportView({ report }) {
+  const cards = [
+    ['Emitidas', report.resumo.emitidas],
+    ['Atendidas', report.resumo.atendidas],
+    ['Não compareceram', report.resumo.nao_compareceram],
+    ['Descartadas', report.resumo.descartadas],
+    ['Tempo médio de atendimento', formatDuration(report.resumo.tempo_medio_segundos)]
+  ];
+
+  return <article className="report" aria-labelledby="report-title">
+    <header className="report-header">
+      <p>Período consultado</p>
+      <h3 id="report-title">Relatório de {report.periodo}</h3>
+    </header>
+    <div className="report-summary" aria-label="Resumo geral">
+      {cards.map(([label, value]) => <dl className="report-card" key={label}>
+        <dt>{label}</dt><dd>{value}</dd>
+      </dl>)}
+    </div>
+    <h4 id="report-types-title">Resultados por tipo de senha</h4>
+    <div className="table-scroll" role="region" aria-labelledby="report-types-title" tabIndex="0">
+      <table>
+        <thead><tr>
+          <th scope="col">Tipo</th>
+          <th scope="col">Emitidas</th>
+          <th scope="col">Atendidas</th>
+          <th scope="col">Tempo médio de atendimento</th>
+        </tr></thead>
+        <tbody>{report.resumo.por_tipo.map(row => <tr key={row.tipo}>
+          <th scope="row">{typeLabels[row.tipo] || row.tipo} <span className="type-code">({row.tipo})</span></th>
+          <td>{row.emitidas}</td>
+          <td>{row.atendidas}</td>
+          <td>{formatDuration(row.tempo_medio_segundos)}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+  </article>;
+}
+
 export function Manager({ token }) {
   const [period, setPeriod] = useState('');
   const [report, setReport] = useState(null);
@@ -39,6 +82,6 @@ export function Manager({ token }) {
       <button disabled={busy}>Consultar</button>
     </form>
     {message && <p role="status">{message}</p>}
-    {report && <pre>{JSON.stringify(report, null, 2)}</pre>}
+    {report && <ReportView report={report} />}
   </section>;
 }
