@@ -33,7 +33,7 @@ export async function authenticated(req, _res, next) {
 }
 
 export function manager(req, _res, next) {
-  assert(req.user.gestor === 1, 403, 'Acesso exclusivo do gestor.');
+  assert(Boolean(req.user.gestor), 403, 'Acesso exclusivo do gestor.');
 
   next();
 }

@@ -2,12 +2,14 @@ import { pool, transaction, serialize } from '../db.js';
 import { businessClock, ticketNumber } from '../domain/clock.js';
 import { TYPES, priorityOrder, transitions } from '../domain/queue.js';
 import { assert, positiveId } from '../domain/errors.js';
+import { config } from '../config.js';
 
 async function queueTransaction(work, now) {
   return transaction(async connection => {
     // TODAS as mutações da fila passam pela mesma linha de bloqueio.
     await connection.execute('SELECT id FROM controle_fila WHERE id=1 FOR UPDATE');
-    return work(connection, businessClock(now || new Date()));
+    const clock = businessClock(now || new Date());
+    return work(connection, config.demoMode ? { ...clock, open: true, closed: false } : clock);
   });
 }
 async function event(connection, ticket, state, userId = null) {
@@ -54,8 +56,13 @@ export async function callNext(userId, counterValue, now) {
       'INSERT INTO alternancia (data_operacao,ultimo_tipo) VALUES (?,NULL) ON DUPLICATE KEY UPDATE data_operacao=data_operacao',
       [clock.date]);
     const [daily] = await connection.execute('SELECT ultimo_tipo FROM alternancia WHERE data_operacao=?', [clock.date]);
+    const [previousSecondary] = await connection.execute(
+      "SELECT tipo FROM senhas WHERE data_operacao=? AND tipo IN ('SE','SG') " +
+      'AND primeira_chamada_em IS NOT NULL ORDER BY primeira_chamada_em DESC, id DESC LIMIT 1',
+      [clock.date]);
+    const lastSecondaryType = previousSecondary[0]?.tipo || null;
     let chosen;
-    for (const type of priorityOrder(daily[0].ultimo_tipo)) {
+    for (const type of priorityOrder(daily[0].ultimo_tipo, lastSecondaryType)) {
       const [rows] = await connection.execute(
         "SELECT id,tipo FROM senhas WHERE data_operacao=? AND tipo=? AND estado='AGUARDANDO' " +
         'ORDER BY sequencia LIMIT 1 FOR UPDATE', [clock.date, type]);
@@ -113,5 +120,15 @@ export async function panel() {
     "SELECT e.id AS evento_id,e.estado,e.ocorrido_em,s.numero,s.tipo,s.sequencia,g.numero AS guiche " +
     "FROM eventos e JOIN senhas s ON s.id=e.senha_id JOIN guiches g ON g.id=s.guiche_id " +
     "WHERE e.estado IN ('CHAMADA','CHAMADA_NOVAMENTE') ORDER BY e.id DESC LIMIT 5");
+  return rows.map(serialize);
+}
+
+export async function waitingQueue() {
+  const { date } = businessClock();
+  const [rows] = await pool.execute(
+    "SELECT id,numero,tipo,estado,emitida_em FROM senhas WHERE data_operacao=? " +
+    "AND estado='AGUARDANDO' ORDER BY FIELD(tipo,'SP','SE','SG'),sequencia LIMIT 100",
+    [date]
+  );
   return rows.map(serialize);
 }

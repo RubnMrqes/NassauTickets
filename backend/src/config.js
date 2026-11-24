@@ -1,7 +1,8 @@
 import 'dotenv/config';
 export const config = {
   port: Number(process.env.PORT || 3001),
-  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  origin: (process.env.FRONTEND_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173').split(',').map(value => value.trim()),
+  demoMode: process.env.DEMO_MODE === 'true',
   db: {
     host: process.env.DB_HOST || '127.0.0.1',
     port: Number(process.env.DB_PORT || 3306),

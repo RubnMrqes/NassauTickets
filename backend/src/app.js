@@ -11,6 +11,8 @@ app.use((req, res) => res.status(404).json({ erro: 'Rota não encontrada.' }));
 // Quatro argumentos identificam o middleware de erro no Express.
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
+  if (error.type === 'entity.parse.failed') return res.status(400).json({ erro: 'JSON inválido.' });
+  if (error.type === 'entity.too.large') return res.status(413).json({ erro: 'Dados enviados excedem o limite permitido.' });
   if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ erro: 'Cadastro já existente.' });
   const status = error.status || 503;
   if (status >= 500) console.error('Falha interna:', error.code || error.name);
