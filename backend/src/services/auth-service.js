@@ -17,7 +17,7 @@ export async function login(body) {
     'INSERT INTO sessoes (token_hash,usuario_id,expira_em) VALUES (?,?,DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 8 HOUR))',
     [tokenHash(token), user.id]
   );
-  return { token, usuario: { id: user.id, nome: user.nome, gestor: user.gestor === 1 } };
+  return { token, usuario: { id: user.id, nome: user.nome, email: user.email, gestor: user.gestor === 1 } };
 }
 export async function createUser(body) {
   const { email, password } = credentials(body);

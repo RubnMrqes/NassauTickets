@@ -15,6 +15,7 @@ router.post('/senhas', async (req, res) => res.status(201).json(await tickets.is
 router.get('/painel', async (req, res) => res.json(await tickets.panel()));
 // As rotas abaixo exigem uma sessão válida.
 router.use(authenticated);
+router.get('/auth/me', (req, res) => res.json({ usuario: req.user }));
 router.post('/auth/logout', async (req, res) => {
   await pool.execute('DELETE FROM sessoes WHERE token_hash=?', [req.tokenHash]);
   res.status(204).end();
@@ -23,6 +24,7 @@ router.get('/guiches', async (req, res) => {
   const [rows] = await pool.execute('SELECT id,numero FROM guiches WHERE ativo=1 ORDER BY numero');
   res.json(rows);
 });
+router.get('/fila', async (req, res) => res.json(await tickets.waitingQueue()));
 router.get('/atendimento/atual', async (req, res) => res.json(await tickets.currentTicket(req.user.id)));
 router.post('/atendimento/proximo', async (req, res) =>
   res.json(await tickets.callNext(req.user.id, req.body?.guicheId)));

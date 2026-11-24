@@ -1,7 +1,13 @@
 export const TYPES = ['SP', 'SE', 'SG'];
-// Alternância GLOBAL por dia: após SP, SE e SG têm sua oportunidade.
-export function priorityOrder(lastType) {
-  return lastType === 'SP' ? ['SE', 'SG', 'SP'] : ['SP', 'SE', 'SG'];
+// Entre duas senhas comuns, dá preferência a SP quando houver.
+// SE e SG se alternam nas oportunidades seguintes para nenhuma fila ficar esquecida.
+export function priorityOrder(lastType, lastSecondaryType = null) {
+  if (lastType === 'SP') {
+    return lastSecondaryType === 'SE' ? ['SG', 'SE', 'SP'] : ['SE', 'SG', 'SP'];
+  }
+  if (lastType === 'SE') return ['SP', 'SG', 'SE'];
+  if (lastType === 'SG') return ['SP', 'SE', 'SG'];
+  return ['SP', 'SE', 'SG'];
 }
 // A segunda chamada é opcional se o cliente chegou na primeira.
 export const transitions = {

@@ -26,6 +26,9 @@ export async function report(period) {
     resumo: {
       emitidas: details.length, atendidas: attended.length,
       nao_compareceram: details.filter(row => row.estado === 'NAO_COMPARECEU').length,
+      taxa_nao_comparecimento_pct: details.length
+        ? Math.round(details.filter(row => row.estado === 'NAO_COMPARECEU').length * 1000 / details.length) / 10
+        : 0,
       descartadas: details.filter(row => row.estado === 'DESCARTADA').length,
       tempo_medio_segundos: averages(attended),
       por_tipo: ['SP', 'SE', 'SG'].map(tipo => ({
