@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { api } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import { formatDuration } from '../utils/report.js';
 
 const typeLabels = { SP: 'Prioritária', SE: 'Retirada de exames', SG: 'Geral' };
+
+function dateTime(value) {
+  if (!value) return '—';
+  return new Date(value).toLocaleString('pt-BR', { timeZone: 'America/Recife' });
+}
 
 function ReportView({ report }) {
   const cards = [
     ['Emitidas', report.resumo.emitidas],
     ['Atendidas', report.resumo.atendidas],
     ['Não compareceram', report.resumo.nao_compareceram],
+    ['Taxa de não comparecimento', report.resumo.taxa_nao_comparecimento_pct + '%'],
     ['Descartadas', report.resumo.descartadas],
     ['Tempo médio de atendimento', formatDuration(report.resumo.tempo_medio_segundos)]
   ];
@@ -40,10 +46,33 @@ function ReportView({ report }) {
         </tr>)}</tbody>
       </table>
     </div>
+    <h4 id="report-details-title">Detalhamento das senhas</h4>
+    <div className="table-scroll" role="region" aria-labelledby="report-details-title" tabIndex="0">
+      {report.detalhado.length ? <table>
+        <thead><tr><th>Número</th><th>Tipo</th><th>Estado</th><th>Emissão</th><th>Atendimento</th><th>Guichê</th></tr></thead>
+        <tbody>{report.detalhado.map(row => <tr key={row.numero}>
+          <td>{row.numero}</td><td>{typeLabels[row.tipo] || row.tipo}</td><td>{row.estado}</td>
+          <td>{dateTime(row.emitida_em)}</td><td>{dateTime(row.atendimento_em)}</td>
+          <td>{row.guiche ?? '—'}</td>
+        </tr>)}</tbody>
+      </table> : <p>Não há senhas nesse período.</p>}
+    </div>
+    <h4 id="report-audit-title">Auditoria de atendimento</h4>
+    <div className="table-scroll" role="region" aria-labelledby="report-audit-title" tabIndex="0">
+      {report.auditoria.length ? <table>
+        <thead><tr><th>Senha</th><th>Atendente</th><th>Guichê</th><th>1ª chamada</th><th>2ª chamada</th><th>Início</th><th>Fim</th></tr></thead>
+        <tbody>{report.auditoria.map(row => <tr key={row.numero}>
+          <td>{row.numero}</td><td>{row.atendente || '—'}</td><td>{row.guiche ?? '—'}</td>
+          <td>{dateTime(row.primeira_chamada_em)}</td><td>{dateTime(row.segunda_chamada_em)}</td>
+          <td>{dateTime(row.inicio_em)}</td><td>{dateTime(row.fim_em)}</td>
+        </tr>)}</tbody>
+      </table> : <p>Não há eventos de auditoria nesse período.</p>}
+    </div>
   </article>;
 }
 
-export function Manager({ token }) {
+export function Manager() {
+  const { request } = useAuth();
   const [period, setPeriod] = useState('');
   const [report, setReport] = useState(null);
   const [message, setMessage] = useState('');
@@ -56,15 +85,17 @@ export function Manager({ token }) {
   }
   function user(event) {
     event.preventDefault();
-    const body = Object.fromEntries(new FormData(event.currentTarget));
-    run(async () => { await api('/usuarios', { method: 'POST', token, body }); setMessage('Atendente criado.'); });
+    const form = event.currentTarget;
+    const body = Object.fromEntries(new FormData(form));
+    run(async () => { await request('/usuarios', { method: 'POST', body }); form.reset(); setMessage('Atendente criado.'); });
   }
   function counter(event) {
     event.preventDefault();
-    const body = Object.fromEntries(new FormData(event.currentTarget));
-    run(async () => { await api('/guiches', { method: 'POST', token, body }); setMessage('Guichê criado.'); });
+    const form = event.currentTarget;
+    const body = Object.fromEntries(new FormData(form));
+    run(async () => { await request('/guiches', { method: 'POST', body }); form.reset(); setMessage('Guichê criado.'); });
   }
-  return <section><h2>Gestão</h2>
+  return <section><p className="eyebrow">Área do gestor</p><h2>Gestão</h2>
     <form onSubmit={user}><h3>Cadastrar atendente</h3>
       <label>Nome<input name="nome" required minLength={2} maxLength={100} /></label>
       <label>E-mail<input name="email" type="email" required /></label>
@@ -76,12 +107,13 @@ export function Manager({ token }) {
       <button disabled={busy}>Cadastrar guichê</button>
     </form>
     <form onSubmit={event => { event.preventDefault(); run(async () =>
-      setReport(await api('/relatorios?periodo=' + encodeURIComponent(period), { token }))); }}>
+      setReport(await request('/relatorios?periodo=' + encodeURIComponent(period)))); }}>
       <h3>Relatório diário ou mensal</h3>
-      <label>Período<input placeholder="2026-10 ou 2026-10-03" value={period} onChange={event => setPeriod(event.target.value)} required /></label>
+      <label>Período<input placeholder="AAAA-MM ou AAAA-MM-DD" value={period} onChange={event => setPeriod(event.target.value)} required /></label>
       <button disabled={busy}>Consultar</button>
     </form>
-    {message && <p role="status">{message}</p>}
+    {busy && <p role="status">Processando solicitação...</p>}
+    {message && <p role={message.includes('criado.') ? 'status' : 'alert'}>{message}</p>}
     {report && <ReportView report={report} />}
   </section>;
 }

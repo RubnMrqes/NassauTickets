@@ -27,6 +27,13 @@ test('alternância, filas vazias e prioridade de SE sobre SG', () => {
   assert.equal(choose('SP', ['SG']), 'SG');
   assert.equal(choose('SG', []), undefined);
 });
+test('fila geral não fica sem vez quando existem muitas senhas prioritárias', () => {
+  assert.deepEqual(priorityOrder('SP', null), ['SE','SG','SP']);
+  assert.deepEqual(priorityOrder('SP', 'SE'), ['SG','SE','SP']);
+  assert.deepEqual(priorityOrder('SP', 'SG'), ['SE','SG','SP']);
+  assert.deepEqual(priorityOrder('SE'), ['SP','SG','SE']);
+  assert.deepEqual(priorityOrder('SG'), ['SP','SE','SG']);
+});
 test('estado permite início na primeira chamada e ausência apenas na segunda', () => {
   assert(transitions.iniciar.from.includes('CHAMADA'));
   assert(!transitions.ausente.from.includes('CHAMADA'));

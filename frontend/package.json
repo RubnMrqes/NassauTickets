@@ -7,14 +7,15 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "vite --host localhost",
     "test": "node --test test/*.test.js",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "react-router-dom": "6.30.2"
   },
   "devDependencies": {
     "vite": "^7.3.6"

@@ -6,7 +6,6 @@ section { background: white; border: 1px solid #bacad5; border-radius: 12px; pad
 nav, .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
 button { border: 0; background: #145677; color: white; padding: 12px 16px; border-radius: 6px; font: inherit; cursor: pointer; }
 button:disabled { background: #607580; cursor: not-allowed; }
-button[aria-pressed="true"] { background: #173b27; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #c36d00; outline-offset: 3px; }
 label { display: block; margin: 12px 0; }
 input, select { display: block; width: 100%; max-width: 440px; padding: 10px; font: inherit; margin-top: 4px; }
@@ -27,3 +26,46 @@ th, td { padding: 12px 14px; border-bottom: 1px solid #d9e2e8; text-align: left;
 thead th { background: #eef3f7; color: #173b52; }
 tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .type-code { color: #607580; font-weight: 400; }
+
+.site-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.brand { color: #145677; text-decoration: none; display: flex; flex-direction: column; gap: 4px; }
+.brand span { font-size: .82rem; color: #5f7080; }
+.brand strong { font-size: 1.8rem; }
+.account { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.account span { color: #4a5c6b; }
+nav a, .button-link { display: inline-flex; align-items: center; padding: 11px 15px; border-radius: 7px; background: white; color: #145677; border: 1px solid #bacad5; text-decoration: none; font-weight: 600; }
+nav a[aria-current="page"] { background: #173b27; color: white; border-color: #173b27; }
+nav a:hover, .button-link:hover { border-color: #145677; }
+.secondary { color: #145677; background: white; border: 1px solid #bacad5; }
+.secondary:disabled { background: #e8eef3; color: #607580; }
+a:focus-visible { outline: 3px solid #c36d00; outline-offset: 3px; }
+.eyebrow { font-size: .83rem; letter-spacing: .07em; text-transform: uppercase; color: #32779a; font-weight: 700; }
+.home h2 { max-width: 680px; font-size: clamp(1.7rem, 4vw, 2.6rem); }
+.home-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 14px; margin-top: 28px; }
+.home-links a { display: flex; flex-direction: column; gap: 10px; border: 1px solid #bacad5; border-radius: 10px; padding: 20px; text-decoration: none; color: #172e42; background: #f7fafc; }
+.home-links a:hover { border-color: #145677; }
+.home-links span, .muted { color: #526b7b; font-size: .9rem; }
+.auth-card { max-width: 560px; }
+.issued-ticket, .active-ticket { margin: 22px 0; padding: 20px; border-radius: 10px; background: #eaf6f2; border: 1px solid #9acbb8; }
+.issued-ticket span, .active-ticket span { display: block; font-size: .92rem; color: #35574b; }
+.issued-ticket strong, .active-ticket strong { display: block; color: #173b27; font-size: clamp(1.6rem, 4vw, 2.6rem); margin-top: 6px; }
+.issued-ticket p, .active-ticket p { margin-bottom: 0; }
+.empty { border: 1px dashed #bacad5; border-radius: 8px; padding: 20px; color: #526b7b; }
+.network-feedback { border-left: 4px solid #b04c35; background: #fff6f4; padding: 12px 16px; margin: 15px 0; }
+.sample-notice { background: #fff7db; color: #634c19; border: 1px solid #ebd28a; padding: 13px 16px; border-radius: 7px; }
+.calls { padding: 0; list-style: none; display: grid; gap: 10px; }
+.calls li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px solid #bacad5; border-radius: 8px; background: #f7fafc; padding: 16px; }
+.calls strong { color: #145677; }
+.calls small { background: #fff7db; border-radius: 4px; padding: 4px 8px; }
+.attendant-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(230px, 1fr); gap: 30px; }
+.heading-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.waiting-list { padding: 0; list-style: none; }
+.waiting-list li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 1rem; padding: 12px; border-bottom: 1px solid #d9e2e8; }
+.waiting-list li span { color: #526b7b; }
+.success-message { color: #166c3a; font-weight: 700; }
+@media (max-width: 700px) {
+  main { padding: 14px; }
+  section { padding: 18px; }
+  .attendant-layout { grid-template-columns: 1fr; }
+  nav a { flex: 1; justify-content: center; }
+}
